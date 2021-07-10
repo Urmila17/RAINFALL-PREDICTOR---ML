@@ -1,0 +1,344 @@
+---
+title: "Final Review"
+author: "Vivek Gorania and Urmila Singh "
+output: html_document
+---
+
+```{r}
+Rain <- read.csv("fin.csv",na.strings = c("NaN","NA",""))
+head(Rain)
+summary(Rain)
+names(Rain)
+
+#Data Cleaning 
+Rain <- Rain[,-c(11,12,13)]
+Rain <- unique(Rain)
+dim(Rain)
+str(Rain)
+```
+```{r}
+library(tidyr)
+library(stringr)
+library(dplyr) 
+library(purrr)
+library(knitr)
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+
+# missing values in data and presented them in the form of table
+missing_values = Rain %>%
+  map_df(function(i) sum(is.na(i))) %>%
+  gather(feature, total_null_count) %>%
+  arrange(desc(total_null_count))
+#Removing missing values dataset 
+Rain <- na.omit(Rain)
+sum(is.na(Rain))
+
+```
+```{r}
+Rain <-as.data.frame(Rain)
+str(Rain)
+Rain<- Rain[complete.cases(Rain),]
+
+attach(Rain)
+plot(Rainfall~MinTemp+WindGustSpeed+Cloud9am,Rain)
+```
+
+```{r}
+# Side by side boxplot of data
+library(ggplot2)
+ggplot(data = Rain, aes(x = Location, y = Rainfall)) +
+  geom_boxplot() +
+  stat_boxplot(geom = "errorbar") +
+  stat_summary(fun = mean, col = "black", geom = "point", size = 3) +
+  ggtitle("Side by Side Boxplots of Location and  Rainfall")
+```
+```{r}
+#Boxplot 
+boxplot(Rainfall~Pressure3pm, data = Rain, main = "Categorised by Rainfall and Pressure")
+```
+
+```{r}
+#Bargraph 
+Rain%>%
+  ggplot(aes(RainToday)) + 
+  geom_bar() +
+  labs(title = "Rain by Today's average ", 
+       x = "", 
+       y = "Count")
+```
+
+
+
+```{r}
+#3
+Rain %>% 
+  group_by(Location) %>%
+  summarize(SumOfRainfall = sum(Rainfall)) %>%
+  arrange(desc(SumOfRainfall)) %>%
+  head(15) %>%
+  ggplot(aes(x = Location, y = SumOfRainfall, fill = Location)) +
+  geom_bar(stat="identity") +
+  labs(title= "Top most cities with rainfall" ) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+```
+```{r}
+#All types of linear Modeling
+fit1=lm(RainTomorrow ~WindGustSpeed, data = Rain)
+fit1
+summary(fit1)
+fit2=lm(RainTomorrow~MinTemp, data=Rain)
+fit2
+summary(fit2)
+fit3=lm(RainTomorrow~Rainfall, data=Rain)
+fit3
+summary(fit3)
+fit3=lm(Cloud9am~RainTomorrow, data=Rain)
+fit3
+summary(fit3)
+```
+```{r}
+#All types of multiple regression Modeling 
+fit <- lm(RainTomorrow~Rainfall+MinTemp+WindGustSpeed, data=Rain)
+fit
+plot(fit)
+summary(fit)
+```
+```{r}
+#All types of multiple regression Modeling 
+fit <- lm(RainTomorrow~Rainfall+MinTemp+WindGustSpeed, data=Rain)
+plot(fit)
+summary(fit)
+coefficients(fit) # model coefficients
+confint(fit, level=0.95) # CIs for model parameters
+anova(fit) # anova table
+vcov(fit) # covariance matrix for model parameters
+
+
+#Comapring models 
+fit1 <-  lm(RainTomorrow~Rainfall+MinTemp+WindGustSpeed, data=Rain)
+fit2 <-  lm(RainTomorrow~Rainfall+MaxTemp+WindGustSpeed, data=Rain)
+anova(fit1,fit2)
+```
+```{r}
+#Importing the dataset
+dataset = read.csv('fin1.csv',header=T, stringsAsFactors=T)
+summary(dataset)
+dataset=na.omit(dataset)
+#Encoding categorical data
+
+dataset$Location = factor(dataset$Location,
+                          levels = c('Albury','BadgeeysCreek','Cobar','CoffsHarbour','Moree','Newcastle','NorahHead','NorforkIsland','Penrith','Richmond','Sydney','SydneyAirport','WaggaWagga','Williamtown','Wollongong','Canberra','Tuggeranong','MountGinini','Ballarat','Bendigo','Sale','MelbourneAirport','Melbourne','Mildura','Nhil','Portland','Watsonia','Dartmoor','Brisbane','Cairns','GoldCoast','Townsville','Adelaide','MountGambier','Nuriootpa','Woomera','Albany','Witchcliffe','PearceRAAF','PerthAirport','Perth','SalmonGums','Walpole','Hobart','Launceston','AliceSprings','Darwin','Katherine','Uluru'),
+                          labels = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49))
+
+dataset=dataset[2:21]
+
+dataset$WindGustDir = factor(dataset$WindGustDir,
+                           levels = c('E', 'ENE','ESE','N', 'NA', 'NE', 'NNE', 'NNW', 'NW', 'S', 'SE', 'SSE', 'SSW', 'SW', 'W', 'WNW', 'WSW'),
+                           labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
+
+dataset$WindDir9am = factor(dataset$WindDir9am,
+                           levels = c('E', 'ENE','ESE','N', 'NA', 'NE', 'NNE', 'NNW', 'NW', 'S', 'SE', 'SSE', 'SSW', 'SW', 'W', 'WNW', 'WSW'),
+                           labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
+
+dataset$WindDir3pm = factor(dataset$WindDir3pm,
+                           levels = c('E', 'ENE','ESE','N', 'NA', 'NE', 'NNE', 'NNW', 'NW', 'S', 'SE', 'SSE', 'SSW', 'SW', 'W', 'WNW', 'WSW'),
+                           labels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
+
+summary(dataset)
+
+#Splitting the dataset into the Training set and Test set
+#install.packages('caTools')
+library(caTools)
+set.seed(123)
+split = sample.split(dataset$RainTomorrow, SplitRatio = 0.8)
+training_set = subset(dataset, split == TRUE)
+test_set = subset(dataset, split == FALSE)
+
+```
+```{r}
+#install.packages("caret")
+library(caret)
+#Fitting Logistic Regression to the Training set
+classifier <- glm(formula = RainTomorrow ~ Rainfall + Humidity3pm + MinTemp + RainToday, family = binomial, data = training_set)
+summary(classifier)
+
+dataset$MinTemp = ifelse(is.na(dataset$MinTemp),
+                     ave(dataset$MinTemp, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$MinTemp)
+
+dataset$MaxTemp = ifelse(is.na(dataset$MaxTemp),
+                     ave(dataset$MaxTemp, FUN = function(x) mean(x, na.rm = TRUE)),dataset$MaxTemp)
+
+dataset$Rainfall = ifelse(is.na(dataset$Rainfall),
+                     ave(dataset$Rainfall, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$Rainfall)
+
+dataset$WindGustDir = ifelse(is.na(dataset$WindGustDir),
+                     ave(dataset$WindGustDir, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindGustDir)
+
+dataset$WindGustSpeed = ifelse(is.na(dataset$WindGustSpeed),
+                     ave(dataset$WindGustSpeed, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindGustSpeed)
+
+dataset$WindDir9am = ifelse(is.na(dataset$WindDir9am),
+                     ave(dataset$WindDir9am, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindDir9am)
+
+dataset$WindDir3pm = ifelse(is.na(dataset$WindDir3pm),
+                     ave(dataset$WindDir3pm, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindDir3pm)
+
+dataset$WindSpeed9am = ifelse(is.na(dataset$WindSpeed9am),
+                     ave(dataset$WindSpeed9am, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindSpeed9am)
+
+dataset$WindSpeed3pm = ifelse(is.na(dataset$WindSpeed3pm),
+                     ave(dataset$WindSpeed3pm, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindSpeed3pm)
+
+dataset$Cloud9am = ifelse(is.na(dataset$Cloud9am),
+                     ave(dataset$Cloud9am, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$Cloud9am)
+
+dataset$Cloud3pm = ifelse(is.na(dataset$Cloud3pm),
+                     ave(dataset$Cloud3pm, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$Cloud3pm)
+
+dataset$Humidity3pm = ifelse(is.na(dataset$Humidity3pm),ave(dataset$Humidity3pm, FUN = function(x) mean(x, na.rm = TRUE)),dataset$Humidity3pm)
+
+dataset$WindSpeed3pm = ifelse(is.na(dataset$WindSpeed3pm),
+                     ave(dataset$WindSpeed3pm, FUN = function(x) mean(x, na.rm = TRUE)),
+                     dataset$WindSpeed3pm)
+```
+```{r}
+library(pROC)
+library(aod)
+library(nnet)
+library(prediction)
+#Logistic Regression
+classifier = glm(formula = RainTomorrow~ Rainfall+Humidity3pm+MinTemp+RainToday,family = binomial, data = training_set)
+summary(classifier)
+
+# Predicting the Test set results
+prob_pred = predict(classifier, type = 'response', newdata = test_set[-20])
+y_pred = ifelse(prob_pred > 0.5, 1, 0)
+
+# Making the Confusion Matrix
+cm = table(test_set[, 20], y_pred > 0.5)
+cm
+```
+
+```{r}
+#Decision Tree Classifier
+library(rpart)
+classifier = rpart(formula = RainTomorrow ~ Rainfall+Humidity3pm+MinTemp+RainToday, data = training_set)
+
+# Predicting the Test set results
+y_pred = predict(classifier, newdata = test_set[-20], type = 'class')
+length(y_pred)
+length(test_set[-20])
+# Making the Confusion Matrix
+cm = table(test_set[, 20], y_pred)
+cm
+plot(classifier)
+text(classifier)
+
+
+cont = trainControl(method="repeatedcv", number=10, repeats=3)
+model <- train(RainTomorrow ~ Rainfall+Humidity3pm+MinTemp+RainToday, data = training_set, method = "rf", preProcess="scale", trControl=cont)
+model
+```
+```{r}
+#Random Forest
+library(randomForest)
+set.seed(123)
+classifier = randomForest(x = training_set[-20],
+                          y = training_set$RainTomorrow,
+                          ntree = 30)
+summary(classifier)
+
+# Predicting the Test set results
+y_pred = predict(classifier, newdata = test_set[-20])
+length(y_pred)
+# Making the Confusion Matrix
+cm = table(test_set[, 20],  y_pred)
+cm
+plot(classifier)
+
+```
+
+```{r}
+#Support Vector Machine
+library(e1071)
+
+classifier = svm(formula =  RainTomorrow ~ Rainfall+Humidity3pm+MinTemp+RainToday,
+                 data = training_set,
+                 type = 'C-classification',
+                 kernel = 'linear',cost=10,
+                 scale=FALSE)
+summary((classifier))
+
+# Predicting the Test set results
+y_pred = predict(classifier, newdata = test_set[-20])
+# Making the Confusion Matrix
+cm = table(test_set[, 20], y_pred)
+cm
+confusionMatrix(cm)
+```
+
+```{r}
+#Boosting
+library(gbm)
+
+set.seed(1)
+boost.classifier=gbm(formula = RainTomorrow~ Rainfall+Humidity3pm+MinTemp+RainToday,data=training_set,distribution="gaussian",n.trees=1000,interaction.depth=4)
+summary(boost.classifier)
+
+par(mfrow=c(1,2))
+plot(boost.classifier,i="MinTemp")
+plot(boost.classifier,i="Rainfall")
+yhat.boost=predict(boost.classifier,newdata=test_set[-21],n.trees=1000)
+cm = table(test_set[, 20], yhat.boost>1.5)
+cm
+x=is.numeric(test_set[20])
+
+y=mean((yhat.boost-x)^2)
+y
+
+boost.classifier=gbm(formula = RainTomorrow~ Rainfall+Humidity3pm+MinTemp+RainToday,data=training_set,distribution="gaussian",n.trees=5000,interaction.depth=4,shrinkage=0.2,verbose=F)
+yhat.boost=predict(boost.classifier,newdata=test_set[-20],n.trees=5000)
+cm = table(test_set[, 20], yhat.boost>1.5)
+cm
+y=mean((yhat.boost-x)^2)
+y
+```
+
+```{r}
+#Bagging
+
+set.seed(1)
+library(randomForest)
+Rain.bag=randomForest(RainTomorrow~Rainfall+Humidity3pm+MinTemp+RainToday,data = training_set,mtry=2,ntree=25,importance=TRUE)
+Rain.bag
+plot(Rain.bag)
+bag.predict=predict(Rain.bag, test_set,type="class")
+importance(Rain.bag)
+varImpPlot(Rain.bag)
+
+#2
+set.seed(1)
+library(randomForest)
+Rain.bag=randomForest(RainTomorrow~Rainfall+Humidity3pm+MinTemp+RainToday,data = training_set,mtry=4,ntree=100,importance=TRUE)
+Rain.bag
+plot(Rain.bag)
+bag.predict=predict(Rain.bag, test_set,type="class")
+importance(Rain.bag)
+varImpPlot(Rain.bag)
+
+
+```
+
